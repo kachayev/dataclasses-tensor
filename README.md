@@ -50,6 +50,9 @@ Working with tensors:
 ```python
 >>> state = Chess(100., next_move=Player.WHITE, board=[Piece(PieceType.KING, Player.BLACK)])
 >>> t1 = state.to_numpy()
+array([100.,   1.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   1.,   0.,
+         1.,   1.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   1.,
+...
 >>> t1.shape
 (579,)
 >>> Chess.from_numpy(t1)

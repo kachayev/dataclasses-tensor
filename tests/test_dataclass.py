@@ -41,7 +41,6 @@ def test_dataclass_api():
     assert s2.board[1] is None
     assert len(set(s2.board[1:])) == 1
 
-
 def test_unsupported_type_failure():
     @dataclass_tensor
     @dataclass

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 setup(
     name="dataclasses-tensor",
-    version="0.2.0",
+    version="0.2.1",
     packages=find_packages(exclude=("tests*",)),
     package_data={"dataclasses_tensor": ["py.typed"]},
     author="Oleksii Kachaiev",

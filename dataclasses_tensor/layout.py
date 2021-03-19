@@ -145,7 +145,6 @@ class ChunkDataclass(TensorLayout):
         return self.cls(**kvs)
 
 def _type_layout(type_, metadata=None):
-    print(type_)
     if type_ in (int, float, bool):
         return ChunkPrimitive(type_)
 
