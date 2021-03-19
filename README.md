@@ -16,9 +16,10 @@ Tensor representation for a game state in Chess:
 
 ```python
 from dataclasses import dataclass, field
-from dataclasses_tensor import dataclass_tensor, config
 from enum import Enum
 from typing import Optional, List
+
+from dataclasses_tensor import dataclass_tensor, config
 
 class Player(Enum):
   WHITE = 0
