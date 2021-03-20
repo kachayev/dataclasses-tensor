@@ -273,11 +273,47 @@ or with defaults setup in a decorator
 array([0, 0, 1], dtype=int32)
 ```
 
-### Custom Attribute Resolver
-
-TBD
-
 ### Batch
+
+To create batch, use `batch=True` parameter. See examples:
+
+```python
+>>> class Matrix(Enum):
+...     THE_MATRIX = 1
+...     RELOADED = 2
+...     REVOLUTIONS = 3
+...
+>>> @dataclass_tensor
+... @dataclass
+... class WatchList:
+...     matrix: Matrix
+...
+>>> WatchList.to_numpy([
+...     WatchList(Matrix.THE_MATRIX),
+...     WatchList(Matrix.RELOADED),
+... ], batch=True)
+array([[1., 0., 0.],
+       [0., 1., 0.]], dtype=float32)
+>>> WatchList.from_numpy(_, batch=True)
+[WatchList(next_move=<Matrix.THE_MATRIX: 0>),
+ WatchList(next_move=<Matrix.RELOADED: 1>)]
+```
+
+`batch_size` could be used to provide length hint (to ensure good performance when working with generators):
+
+```python
+>>> WatchList.to_numpy((
+...     WatchList(Matrix.THE_MATRIX),
+...     WatchList(Matrix.RELOADED),
+... ), batch_size=2)
+array([[1., 0., 0.],
+       [0., 1., 0.]], dtype=float32)
+>>> WatchList.from_numpy(_, batch_size=2)
+[WatchList(next_move=<Matrix.THE_MATRIX: 0>),
+ WatchList(next_move=<Matrix.RELOADED: 1>)]
+```
+
+### Custom Attribute Resolver
 
 TBD
 
@@ -285,7 +321,6 @@ TBD
 
 - [ ] Tests suite for PyTorch and TensorFlow adapters
 - [ ] Custom attribute resolver (e.g. from dict instead of class instance)
-- [ ] Batch operations (write many/read many)
 - [ ] Pretty-print for tensor layout object
 
 ## Contributing

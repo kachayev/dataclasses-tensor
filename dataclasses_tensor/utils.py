@@ -1,7 +1,21 @@
 import inspect
 import sys
 
+from functools import wraps
 from typing import Any, List, Optional, Union
+
+class hybridmethod:
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, obj, cls):
+        @wraps(self.func)
+        def hybrid(*args, **kwargs):
+            return self.func(cls, obj, *args, **kwargs)
+
+        hybrid.__func__ = hybrid.im_func = self.func
+        hybrid.__self__ = hybrid.im_self = obj or cls
+        return hybrid
 
 def _get_type_cons(type_):
     if sys.version_info.minor == 6:

@@ -4,32 +4,97 @@ from typing import Iterable, Optional, Type, Union
 
 from .adapters import (TensorAdapter, _numpy_adapter, _pytorch_adapter, _tf_adapter)
 from .layout import (TensorLayout, _dataclass_layout)
+from .utils import hybridmethod
 
 class DataClassTensorMixin(abc.ABC):
-   
-    def to_numpy(self, *, tensor_layout: Optional[Type[TensorLayout]]=None, dtype=None):
-        layout = tensor_layout or self.tensor_layout()
-        return _to_tensor(_numpy_adapter,  layout, self, self._resolve_dtype(dtype))
+    @hybridmethod 
+    def to_numpy(cls,
+                 self,
+                 obj=None,
+                 *,
+                 tensor_layout: Optional[Type[TensorLayout]] = None,
+                 dtype = None,
+                 batch: bool = False,
+                 batch_size: Optional[int] = None):
+        layout = tensor_layout or cls.tensor_layout()
+        return _to_tensor(_numpy_adapter,
+                          layout,
+                          obj or self,
+                          dtype=cls._resolve_dtype(dtype),
+                          batch=batch,
+                          batch_size=batch_size)
 
     @classmethod
-    def from_numpy(cls, tensor, tensor_layout: Optional[Type[TensorLayout]]=None):
-        return _from_tensor(_numpy_adapter, tensor_layout or cls.tensor_layout(), tensor)
+    def from_numpy(cls, 
+                   tensor,
+                   *,
+                   tensor_layout: Optional[Type[TensorLayout]]=None,
+                   batch: bool = False,
+                   batch_size: Optional[int] = None):
+        return _from_tensor(_numpy_adapter,
+                            tensor_layout or cls.tensor_layout(),
+                            tensor,
+                            batch=batch,
+                            batch_size=batch_size)
 
-    def to_torch(self, *, tensor_layout: Optional[Type[TensorLayout]]=None, dtype=None):
-        layout = tensor_layout or self.tensor_layout()
-        return _to_tensor(_pytorch_adapter, layout, self, self._resolve_dtype(dtype))
+    @hybridmethod
+    def to_torch(cls,
+                 self,
+                 obj=None,
+                 *,
+                 tensor_layout: Optional[Type[TensorLayout]] = None,
+                 dtype = None,
+                 batch: bool = False,
+                 batch_size: Optional[int] = None):
+        layout = tensor_layout or cls.tensor_layout()
+        return _to_tensor(_pytorch_adapter,
+                          layout,
+                          obj or self,
+                          dtype=cls._resolve_dtype(dtype),
+                          batch=batch,
+                          batch_size=batch_size)
 
     @classmethod
-    def from_torch(cls, tensor, tensor_layout: Optional[Type[TensorLayout]]=None):
-        return _from_tensor(_pytorch_adapter, tensor_layout or cls.tensor_layout(), tensor)
+    def from_torch(cls,
+                   tensor,
+                   *,
+                   tensor_layout: Optional[Type[TensorLayout]] = None,
+                   batch: bool = False,
+                   batch_size: Optional[int] = None):
+        return _from_tensor(_pytorch_adapter,
+                            tensor_layout or cls.tensor_layout(),
+                            tensor,
+                            batch=batch,
+                            batch_size=batch_size)
 
-    def to_tf(self, *, tensor_layout: Optional[Type[TensorLayout]]=None, dtype=None):
-        layout = tensor_layout or self.tensor_layout()
-        return _to_tensor(_tf_adapter, layout, self, self._resolve_dtype(dtype))
+    @hybridmethod
+    def to_tf(cls,
+              self,
+              obj=None,
+              *,
+              tensor_layout: Optional[Type[TensorLayout]] = None,
+              dtype = None,
+              batch: bool = False,
+              batch_size: Optional[int] = None):
+        layout = tensor_layout or cls.tensor_layout()
+        return _to_tensor(_tf_adapter,
+                          layout,
+                          obj or self,
+                          dtype=cls._resolve_dtype(dtype),
+                          batch=batch,
+                          batch_size=batch_size)
 
     @classmethod
-    def from_tf(cls, tensor, tensor_layout: Optional[Type[TensorLayout]]=None):
-        return _from_tensor(_tf_adapter, tensor_layout or cls.tensor_layout(), tensor)
+    def from_tf(cls,
+                tensor,
+                tensor_layout: Optional[Type[TensorLayout]] = None,
+                batch: bool = False,
+                batch_size: Optional[int] = None):
+        return _from_tensor(_tf_adapter,
+                            tensor_layout or cls.tensor_layout(),
+                            tensor,
+                            batch=batch,
+                            batch_size=batch_size)
 
     @classmethod
     def tensor_layout(cls):
@@ -56,11 +121,11 @@ def dataclass_tensor(_cls=None, *, dtype="float32"):
     return wrap(_cls)
 
 def _process_class(cls, dtype):
-    cls.to_numpy = DataClassTensorMixin.to_numpy
+    cls.to_numpy = hybridmethod(DataClassTensorMixin.to_numpy.__func__)
     cls.from_numpy = classmethod(DataClassTensorMixin.from_numpy.__func__)
-    cls.to_torch = DataClassTensorMixin.to_torch
+    cls.to_torch = hybridmethod(DataClassTensorMixin.to_torch.__func__)
     cls.from_torch = classmethod(DataClassTensorMixin.from_torch.__func__)
-    cls.to_tf = DataClassTensorMixin.to_tf
+    cls.to_tf = hybridmethod(DataClassTensorMixin.to_tf.__func__)
     cls.from_tf = classmethod(DataClassTensorMixin.from_tf.__func__)
     cls.tensor_layout = classmethod(DataClassTensorMixin.tensor_layout.__func__)
     cls._default_tensor_dtype = dtype
@@ -71,10 +136,37 @@ def _process_class(cls, dtype):
 def config(shape: Optional[Iterable[int]]):
     return {"shape": shape}
 
-def _to_tensor(adapter: TensorAdapter, layout: Type[TensorLayout], val, dtype="float"):
-    tensor = adapter.zeros(len(layout), dtype=dtype)
-    layout.write(adapter, 0, tensor, val)
+def _to_tensor(adapter: TensorAdapter,
+               layout: Type[TensorLayout],
+               val,
+               *,
+               dtype="float",
+               batch: bool = False,
+               batch_size: Optional[int] = None):
+    batch = batch or batch_size is not None
+    shape = len(layout)
+    if batch:
+        batch_size = batch_size or (len(val) if hasattr(val, "__len__") else 0)
+        shape = (batch_size, shape)
+    tensor = adapter.zeros(shape, dtype=dtype)
+    if not batch:
+        layout.write(adapter, 0, tensor, val)
+    else:
+        for i, vi in enumerate(val):
+            layout.write(adapter, 0, tensor[i], vi)
     return tensor
 
-def _from_tensor(adapter: TensorAdapter, layout: Type[TensorLayout], tensor):
-    return layout.read(adapter, 0, tensor)
+def _from_tensor(adapter: TensorAdapter,
+                 layout: Type[TensorLayout],
+                 tensor,
+                 *,
+                 batch: bool = False,
+                 batch_size: Optional[int] = None):
+    batch = batch or batch_size is not None
+    if not batch:
+        return layout.read(adapter, 0, tensor)
+    batch_size = batch_size or (len(tensor) if hasattr(tensor, "__len__") else 0)
+    result = [None]*batch_size
+    for i, t in enumerate(tensor):
+        result[i] = layout.read(adapter, 0, t)
+    return result
