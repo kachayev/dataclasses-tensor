@@ -283,7 +283,6 @@ TBD
 
 ## TODO
 
-- [ ] Tests suite for `dtype`s
 - [ ] Tests suite for PyTorch and TensorFlow adapters
 - [ ] Custom attribute resolver (e.g. from dict instead of class instance)
 - [ ] Batch operations (write many/read many)
