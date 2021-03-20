@@ -147,6 +147,9 @@ def _to_tensor(adapter: TensorAdapter,
     shape = len(layout)
     if batch:
         batch_size = batch_size or (len(val) if hasattr(val, "__len__") else 0)
+        if batch_size == 0:
+            val = list(val)
+            batch_size = len(val)
         shape = (batch_size, shape)
     tensor = adapter.zeros(shape, dtype=dtype)
     if not batch:
@@ -167,6 +170,10 @@ def _from_tensor(adapter: TensorAdapter,
         return layout.read(adapter, 0, tensor)
     batch_size = batch_size or (len(tensor) if hasattr(tensor, "__len__") else 0)
     result = [None]*batch_size
-    for i, t in enumerate(tensor):
-        result[i] = layout.read(adapter, 0, t)
+    if batch_size != 0:
+        for i, t in enumerate(tensor):
+            result[i] = layout.read(adapter, 0, t)
+    else:
+        for t in tensor:
+            result.append(layout.read(adapter, 0, t))
     return result

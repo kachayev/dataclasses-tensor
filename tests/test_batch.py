@@ -24,11 +24,25 @@ def test_batch_api():
     assert s2 == sr2
     assert s3 == sr3
 
-def test_batch_size_api():
+def test_batch_size():
     s1 = Watch(Movie.THE_MATRIX)
     s2 = Watch(Movie.THE_DARK_KNIGHT)
     b = Watch.to_numpy([s1, s2], batch_size=2)
     assert b.shape == (2,3)
     [sr1, sr2] = Watch.from_numpy(b, batch_size=2)
+    assert s1 == sr1
+    assert s2 == sr2
+
+def test_batch_no_size():
+    s1 = Watch(Movie.THE_MATRIX)
+    s2 = Watch(Movie.THE_DARK_KNIGHT)
+
+    def generate_batch():
+        yield s1
+        yield s2
+
+    b = Watch.to_numpy(generate_batch(), batch=True)
+    assert b.shape == (2,3)
+    [sr1, sr2] = Watch.from_numpy(b, batch=True)
     assert s1 == sr1
     assert s2 == sr2
