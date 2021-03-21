@@ -1,6 +1,6 @@
 # Dataclasses Tensor
 
-The library provides a simple API for encoding and decoding Python [`dataclasses`](https://docs.python.org/3/library/dataclasses.html) to and from tensors (PyTorch, TensorFlow, or NumPy arrays) based on `typing` annotations.
+The library provides a simple API for encoding and decoding Python [`dataclasses`](https://docs.python.org/3/library/dataclasses.html) to and from tensors (PyTorch tensors or NumPy arrays) based on `typing` annotations.
 
 Heavily inspired by [`dataclasses-json`](https://github.com/lidatong/dataclasses-json) package.
 
@@ -205,7 +205,8 @@ The library supports the following containers as tensors:
 
 * [NumPy ndarray](https://numpy.org/doc/stable/reference/generated/numpy.array.html) with `to_numpy`/`from_numpy`
 * [PyTorch tensors](https://pytorch.org/docs/stable/tensors.html) with `to_torch`/`from_torch`
-* [TensorFlow tensors](https://www.tensorflow.org/api_docs/python/tf/Tensor) with `to_tf`/`from_tf`
+
+The best way to work with [TensorFlow tensors](https://www.tensorflow.org/api_docs/python/tf/Tensor) is to use NumPy ndarrays and convert result with `tensorflow.convert_to_tensor` (as the tensor stored in memory as a ndarray anywyas).
 
 Note, that dependencies are not installed with the library itself (TensorFlow, PyTorch or NumPy) and should be provided at runtime.
 
@@ -319,7 +320,6 @@ TBD
 
 ## TODO
 
-- [ ] Tests suite for PyTorch and TensorFlow adapters
 - [ ] Custom attribute resolver (e.g. from dict instead of class instance)
 - [ ] Pretty-print for tensor layout object
 

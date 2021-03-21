@@ -41,6 +41,17 @@ def test_dataclass_api():
     assert s2.board[1] is None
     assert len(set(s2.board[1:])) == 1
 
+def test_dataclass_torch_api():
+    board = [None]*64
+    board[0] = Piece(PieceType.QUEEN, Player.BLACK)
+    s1 = Chess(5, Player.WHITE, board)
+    t1 = s1.to_torch()
+    assert s1 == Chess.from_torch(t1)
+    t2 = s1.to_torch(dtype="float32")
+    assert s1 == Chess.from_torch(t2)
+    t3 = s1.to_torch(dtype="int64")
+    assert s1 == Chess.from_torch(t3)
+
 def test_unsupported_type_failure():
     @dataclass_tensor
     @dataclass

@@ -7,6 +7,9 @@ from typing import List, Tuple, Type, Union
 from .utils import (_is_list, _is_optional, _issubclass_safe, _is_union)
 
 class TensorLayout:
+    def __len__(self):
+        raise NotImplementedError()
+
     def read(self, adapter, pos, tensor, argmax=None):
         raise NotImplementedError()
 

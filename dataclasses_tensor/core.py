@@ -2,7 +2,7 @@ import abc
 
 from typing import Iterable, Optional, Type, Union
 
-from .adapters import (TensorAdapter, _numpy_adapter, _pytorch_adapter, _tf_adapter)
+from .adapters import (TensorAdapter, _numpy_adapter, _pytorch_adapter)
 from .layout import (TensorLayout, _dataclass_layout)
 from .utils import hybridmethod
 
@@ -67,35 +67,6 @@ class DataClassTensorMixin(abc.ABC):
                             batch=batch,
                             batch_size=batch_size)
 
-    @hybridmethod
-    def to_tf(cls,
-              self,
-              obj=None,
-              *,
-              tensor_layout: Optional[Type[TensorLayout]] = None,
-              dtype = None,
-              batch: bool = False,
-              batch_size: Optional[int] = None):
-        layout = tensor_layout or cls.tensor_layout()
-        return _to_tensor(_tf_adapter,
-                          layout,
-                          obj or self,
-                          dtype=cls._resolve_dtype(dtype),
-                          batch=batch,
-                          batch_size=batch_size)
-
-    @classmethod
-    def from_tf(cls,
-                tensor,
-                tensor_layout: Optional[Type[TensorLayout]] = None,
-                batch: bool = False,
-                batch_size: Optional[int] = None):
-        return _from_tensor(_tf_adapter,
-                            tensor_layout or cls.tensor_layout(),
-                            tensor,
-                            batch=batch,
-                            batch_size=batch_size)
-
     @classmethod
     def tensor_layout(cls):
         return _dataclass_layout(cls)
@@ -125,8 +96,6 @@ def _process_class(cls, dtype):
     cls.from_numpy = classmethod(DataClassTensorMixin.from_numpy.__func__)
     cls.to_torch = hybridmethod(DataClassTensorMixin.to_torch.__func__)
     cls.from_torch = classmethod(DataClassTensorMixin.from_torch.__func__)
-    cls.to_tf = hybridmethod(DataClassTensorMixin.to_tf.__func__)
-    cls.from_tf = classmethod(DataClassTensorMixin.from_tf.__func__)
     cls.tensor_layout = classmethod(DataClassTensorMixin.tensor_layout.__func__)
     cls._default_tensor_dtype = dtype
     cls._resolve_dtype = classmethod(DataClassTensorMixin._resolve_dtype.__func__)
