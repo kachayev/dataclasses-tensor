@@ -320,6 +320,7 @@ TBD
 
 ## TODO
 
+- [ ] Field configuration to pack `int` into a categorical variable
 - [ ] Custom attribute resolver (e.g. from dict instead of class instance)
 - [ ] Pretty-print for tensor layout object
 
