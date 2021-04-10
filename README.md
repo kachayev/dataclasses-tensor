@@ -336,6 +336,21 @@ or simply...
 * Enjoy it.
 * Spread the word.
 
+# Citing dataclasses-tensor
+
+Please use this bibtex if you want to cite this repository in your publications:
+
+```
+    @misc{dataclassestensor,
+        author = {Oleksii Kachaiev},
+        title = {{dataclasses-tensor - Library to serialize Python dataclasses to and from tensors (PyTorch, NumPy)}},
+        year = {2021},
+        publisher = {GitHub},
+        journal = {GitHub repository},
+        howpublished = {\url{https://github.com/kachayev/dataclasses-tensor}},
+    }
+```
+
 ## License
 
 Copyright © 2021, Oleksii Kachaiev.
